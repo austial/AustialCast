@@ -29,7 +29,7 @@ class VideoDecoder(
     private val onNeedKeyframe: () -> Unit,
     private val onError: (Throwable) -> Unit,
 ) {
-    private val queue = VideoFrameQueue(maxFrames = 8)
+    private val queue = VideoFrameQueue(maxFrames = 8, warmupFrames = 90) // ~3 s of backlog while the hardware codec starts
     private val renderTimes = ConcurrentHashMap<Long, Long>()
     private var codec: MediaCodec? = null
     private var thread: Thread? = null
@@ -61,11 +61,16 @@ class VideoDecoder(
 
     /** Called from the network thread. */
     fun submit(frame: VideoFrame) {
-        when (queue.offer(frame)) {
+        val waitingBefore = queue.isWaitingForKeyframe
+        val sizeBefore = queue.size
+        when (val result = queue.offer(frame)) {
             VideoFrameQueue.Offer.ACCEPTED -> {
                 renderTimes[frame.ptsUs] = clock.renderTimeNs(frame.ptsUs, System.nanoTime())
             }
-            VideoFrameQueue.Offer.DROPPED, VideoFrameQueue.Offer.OVERFLOW -> requestKeyframe()
+            VideoFrameQueue.Offer.DROPPED, VideoFrameQueue.Offer.OVERFLOW -> {
+                Log.w(TAG, "queue drop: $result key=${frame.keyframe} size=$sizeBefore waitingForKey=$waitingBefore pts=${frame.ptsUs / 1000}ms")
+                requestKeyframe()
+            }
         }
     }
 
@@ -81,7 +86,7 @@ class VideoDecoder(
         try {
             while (running) {
                 val frame = queue.poll(6)
-                if (frame != null) feed(c, frame)
+                if (frame != null) feed(c, frame, info)
                 drain(c, info)
             }
         } catch (e: Throwable) {
@@ -92,9 +97,18 @@ class VideoDecoder(
         }
     }
 
-    private fun feed(c: MediaCodec, frame: VideoFrame) {
-        val index = c.dequeueInputBuffer(15_000)
+    private fun feed(c: MediaCodec, frame: VideoFrame, info: MediaCodec.BufferInfo) {
+        // Hardware decoders can take a while to hand out their first input buffers right after start().
+        // Waiting briefly keeps the first keyframe instead of dropping it and stalling until the next one.
+        var index = c.dequeueInputBuffer(15_000)
+        var retries = 0
+        while (index < 0 && running && retries < START_RETRIES) {
+            drain(c, info) // the codec may only free an input buffer once its output was released
+            index = c.dequeueInputBuffer(25_000)
+            retries++
+        }
         if (index < 0) {
+            Log.w(TAG, "no input buffer after $retries retries; dropping")
             inputDrops++
             queue.markNeedsKeyframe()
             requestKeyframe()
@@ -120,6 +134,7 @@ class VideoDecoder(
                     val renderNs = renderTimes.remove(info.presentationTimeUs) ?: 0L
                     if (renderNs > 0) c.releaseOutputBuffer(out, renderNs) else c.releaseOutputBuffer(out, true)
                     counter.onDecoded()
+                    queue.markPrimed()
                     if (renderTimes.size > 64) renderTimes.clear()
                 }
                 out == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED || out == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> Unit
@@ -161,5 +176,6 @@ class VideoDecoder(
 
     companion object {
         private const val TAG = "AustialCastVideo"
+        private const val START_RETRIES = 12 // ~300 ms of extra patience before a frame is dropped
     }
 }

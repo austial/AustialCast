@@ -134,4 +134,53 @@ class PlayoutTest {
         assertEquals(0, d.decoded)
         assertNotNull(d)
     }
+
+    @Test
+    fun warmupToleratesALargeBacklogUntilTheConsumerCatchesUp() {
+        val q = VideoFrameQueue(maxFrames = 4, warmupFrames = 20)
+        q.offer(frame(true, 0))
+        repeat(15) { assertEquals(VideoFrameQueue.Offer.ACCEPTED, q.offer(frame(false, it + 1L))) }
+        assertEquals(16, q.size)
+        assertEquals(0, q.droppedTotal, "a slow decoder start must not cost the first keyframe")
+        q.markPrimed()
+        repeat(14) { q.poll(10) } // consumer catches up: 2 frames left <= maxFrames / 2 -> warm-up over
+        assertEquals(2, q.size)
+        assertEquals(VideoFrameQueue.Offer.ACCEPTED, q.offer(frame(false, 100)))
+        assertEquals(VideoFrameQueue.Offer.ACCEPTED, q.offer(frame(false, 101)))
+        assertEquals(VideoFrameQueue.Offer.OVERFLOW, q.offer(frame(false, 102)), "normal low-latency limit (4) applies again")
+    }
+
+    @Test
+    fun warmupStillOverflowsAtItsOwnLimit() {
+        val q = VideoFrameQueue(maxFrames = 2, warmupFrames = 5)
+        q.offer(frame(true))
+        repeat(4) { q.offer(frame(false)) }
+        assertEquals(VideoFrameQueue.Offer.OVERFLOW, q.offer(frame(false)))
+    }
+
+    @Test
+    fun resetRestartsWarmup() {
+        val q = VideoFrameQueue(maxFrames = 2, warmupFrames = 6)
+        q.offer(frame(true)); q.markPrimed(); q.poll(10) // warm-up ends (primed, queue small)
+        q.reset()
+        q.offer(frame(true))
+        repeat(4) { assertEquals(VideoFrameQueue.Offer.ACCEPTED, q.offer(frame(false))) }
+    }
+
+    @Test
+    fun emptyPollsDoNotEndWarmup() {
+        // The decoder thread polls an empty queue while the hardware codec is still starting.
+        val q = VideoFrameQueue(maxFrames = 4, warmupFrames = 20)
+        repeat(5) { assertNull(q.poll(1)) }
+        q.offer(frame(true))
+        repeat(10) { assertEquals(VideoFrameQueue.Offer.ACCEPTED, q.offer(frame(false))) }
+    }
+
+    @Test
+    fun warmupOnlyEndsAfterThePipelineIsPrimed() {
+        val q = VideoFrameQueue(maxFrames = 4, warmupFrames = 20)
+        q.offer(frame(true))
+        q.poll(10) // consumed one frame but the codec has not produced output yet
+        repeat(10) { assertEquals(VideoFrameQueue.Offer.ACCEPTED, q.offer(frame(false))) }
+    }
 }

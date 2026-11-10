@@ -10,13 +10,19 @@ import java.util.ArrayDeque
  * the whole backlog is discarded and everything is skipped until the next keyframe (which is
  * requested from the sender), instead of letting delay accumulate.
  */
-class VideoFrameQueue(private val maxFrames: Int = 6) {
+class VideoFrameQueue(private val maxFrames: Int = 6, private val warmupFrames: Int = maxFrames) {
     enum class Offer { ACCEPTED, DROPPED, OVERFLOW }
 
     private val frames = ArrayDeque<VideoFrame>()
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private val lock = Object()
     private var waitingForKeyframe = true
+    /**
+     * While warming up (the hardware decoder is still starting) a larger backlog is tolerated. Warm-up ends once
+     * the consumer reported [markPrimed] (the codec produced its first output) and the backlog drained.
+     */
+    private var warm = warmupFrames > maxFrames
+    private var primed = false
     @Volatile var droppedTotal = 0L
         private set
     @Volatile private var closed = false
@@ -33,13 +39,14 @@ class VideoFrameQueue(private val maxFrames: Int = 6) {
             }
             waitingForKeyframe = false
         }
-        if (frames.size >= maxFrames && !frame.keyframe) {
+        val limit = if (warm) warmupFrames else maxFrames
+        if (frames.size >= limit && !frame.keyframe) {
             droppedTotal += frames.size + 1
             frames.clear()
             waitingForKeyframe = true
             return Offer.OVERFLOW
         }
-        if (frames.size >= maxFrames) {
+        if (frames.size >= limit) {
             // A keyframe resets the picture anyway, so older frames are useless.
             droppedTotal += frames.size
             frames.clear()
@@ -57,14 +64,19 @@ class VideoFrameQueue(private val maxFrames: Int = 6) {
             if (remaining <= 0) return null
             lock.wait(remaining)
         }
-        frames.pollFirst()
+        frames.pollFirst()?.also { if (warm && primed && frames.size <= maxFrames / 2) warm = false }
     }
 
     /** Called when the decoder was (re)started: wait for a fresh keyframe. */
     fun reset() = synchronized(lock) {
         frames.clear()
         waitingForKeyframe = true
+        warm = warmupFrames > maxFrames
+        primed = false
     }
+
+    /** The consumer's pipeline is running (e.g. the decoder rendered its first frame). */
+    fun markPrimed() = synchronized(lock) { primed = true }
 
     fun markNeedsKeyframe() = synchronized(lock) {
         frames.clear()
