@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-label="AustialCast: cast your MacBook to Android TV and Google TV">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0F1A"/>
+      <stop offset="1" stop-color="#1A2350"/>
+    </linearGradient>
+    <linearGradient id="icon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6C8CFF"/>
+      <stop offset="1" stop-color="#1A2350"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.45" r="0.5">
+      <stop offset="0" stop-color="#6C8CFF" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#6C8CFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect width="1280" height="640" fill="url(#glow)"/>
+
+  <!-- laptop -> TV illustration -->
+  <g transform="translate(690 190) scale(.7)">
+    <rect x="0" y="40" width="250" height="160" rx="14" fill="#161C2D" stroke="#9AA6C7" stroke-opacity=".5" stroke-width="3"/>
+    <rect x="14" y="54" width="222" height="132" rx="6" fill="#26304D"/>
+    <path d="M-20 200 H270 L250 222 H0 Z" fill="#9AA6C7" fill-opacity=".55"/>
+    <g fill="none" stroke="#6C8CFF" stroke-width="10" stroke-linecap="round">
+      <path d="M300 150 q30 -30 0 -60" opacity=".9"/>
+      <path d="M322 168 q52 -48 0 -96" opacity=".65"/>
+      <path d="M344 186 q74 -66 0 -132" opacity=".4"/>
+    </g>
+    <rect x="390" y="10" width="330" height="200" rx="18" fill="#0B0F1A" stroke="#F2F5FF" stroke-opacity=".35" stroke-width="4"/>
+    <g transform="translate(404 24)">
+      <rect width="46" height="172" fill="#E6E64A" opacity=".9"/>
+      <rect x="46" width="46" height="172" fill="#2FE6D2" opacity=".9"/>
+      <rect x="92" width="46" height="172" fill="#27F01A" opacity=".9"/>
+      <rect x="138" width="46" height="172" fill="#C400C8" opacity=".9"/>
+      <rect x="184" width="46" height="172" fill="#C40010" opacity=".9"/>
+      <rect x="230" width="46" height="172" fill="#0B0BCC" opacity=".9"/>
+      <rect x="276" width="26" height="172" fill="#D0D0D2" opacity=".9"/>
+    </g>
+    <rect x="510" y="226" width="110" height="12" rx="6" fill="#F2F5FF" fill-opacity=".8"/>
+  </g>
+
+  <!-- logo mark -->
+  <g transform="translate(86 96) scale(.42)">
+    <rect x="28" y="28" width="456" height="456" rx="112" fill="url(#icon)"/>
+    <rect x="92" y="148" width="328" height="218" rx="24" fill="#0B0F1A" fill-opacity=".92"/>
+    <rect x="192" y="394" width="128" height="16" rx="8" fill="#F2F5FF" fill-opacity=".92"/>
+    <g fill="none" stroke="#F2F5FF" stroke-width="16" stroke-linecap="round">
+      <path d="M178 330 A38 38 0 0 0 140 292"/>
+      <path d="M216 330 A76 76 0 0 0 140 254" stroke-opacity=".75"/>
+      <path d="M254 330 A114 114 0 0 0 140 216" stroke-opacity=".5"/>
+    </g>
+    <circle cx="140" cy="330" r="13" fill="#F2F5FF"/>
+  </g>
+
+  <g font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" fill="#F2F5FF">
+    <text x="90" y="400" font-size="92" font-weight="800" letter-spacing="-2">AustialCast</text>
+    <text x="94" y="458" font-size="34" fill="#9AA6C7">Cast your MacBook to Android TV &amp; Google TV</text>
+    <text x="94" y="520" font-size="26" fill="#6C8CFF" font-weight="600">Screen + audio · encrypted · PIN pairing · open protocol</text>
+  </g>
+</svg>
