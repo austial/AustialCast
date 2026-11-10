@@ -7,9 +7,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP="$ROOT/dist/AustialCast.app"
 VERSION="1.0.0"
 
+# Universal binary (Apple silicon + Intel) so one build works everywhere; UNIVERSAL=0 builds for this Mac only.
+ARCHS=(--arch arm64 --arch x86_64)
+[ "${UNIVERSAL:-1}" = "0" ] && ARCHS=()
+
 echo "Building release binary…"
-(cd "$ROOT/mac" && swift build -c release --product AustialCastApp 2>&1 | tail -2 && swift build -c release --product austialcast 2>&1 | tail -2)
-BIN="$(cd "$ROOT/mac" && swift build -c release --show-bin-path)"
+(cd "$ROOT/mac" && swift build -c release ${ARCHS[@]+"${ARCHS[@]}"} --product AustialCastApp 2>&1 | tail -2 && swift build -c release ${ARCHS[@]+"${ARCHS[@]}"} --product austialcast 2>&1 | tail -2)
+BIN="$(cd "$ROOT/mac" && swift build -c release ${ARCHS[@]+"${ARCHS[@]}"} --show-bin-path)"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"

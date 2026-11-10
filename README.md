@@ -20,6 +20,7 @@
 [![Encryption](https://img.shields.io/badge/AES--256--GCM-end--to--end-6C8CFF?style=flat-square)](docs/SECURITY.md)
 [![Protocol](https://img.shields.io/badge/protocol-v1%20(open)-informational?style=flat-square)](docs/PROTOCOL.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
+[![Homebrew](https://img.shields.io/badge/brew%20install-aayushsolanki40%2Ftap%2Faustialcast-FBB040?logo=homebrew&logoColor=white&style=flat-square)](#homebrew-recommended)
 [![Last commit](https://img.shields.io/github/last-commit/austial/AustialCast?style=flat-square)](https://github.com/austial/AustialCast/commits/main)
 
 [Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install) · [Usage](#-usage) · [How it works](#-how-it-works) · [Security](#-security) · [Testing](#-testing) · [Troubleshooting](#-troubleshooting) · [Roadmap](#-roadmap)
@@ -101,27 +102,39 @@ Plus: launch-at-login on the Mac, a scriptable `austialcast` command-line tool, 
 
 ## 🚀 Install
 
-You need: a Mac (macOS 14+) and an Android TV / Google TV (Android 7.0+) on the same network.
-To build from source: Xcode 16+ (Swift 6), JDK 17 and the Android SDK (platform 36). The Gradle wrapper is included.
+You need a Mac (macOS 14+, Apple silicon or Intel) and an Android TV / Google TV (Android 7.0+) on the same network.
 
-### 1 · TV app
+### Homebrew (recommended)
 
 ```bash
+# Mac: the menu bar app, plus the `austialcast` command-line tool on your PATH
+brew install --cask aayushsolanki40/tap/austialcast
+open -a AustialCast
+
+# TV: sideload the app over the network (enable USB/Wireless debugging in the TV's Developer options)
+brew install --cask android-platform-tools      # adb, if you don't have it
+adb connect <tv-ip>:5555
+adb install -r "$(brew --prefix)/share/austialcast/AustialCast-TV.apk"
+```
+
+Open **AustialCast** from the TV's app list: it shows a PIN and the TV's address.
+Update later with `brew upgrade --cask austialcast`; remove with `brew uninstall --zap --cask austialcast`.
+Prefer no Homebrew? Download `AustialCast.zip` / `AustialCast-TV.apk` from the [latest release](https://github.com/austial/AustialCast/releases/latest).
+
+> The Mac app is ad-hoc signed, not notarized; the cask clears the download quarantine flag so it opens without a Gatekeeper prompt.
+> macOS will still ask for **Screen Recording** and **Local Network** access the first time you cast.
+
+### Build from source
+
+To build you need Xcode 16+ (Swift 6), JDK 17 and the Android SDK (platform 36). The Gradle wrapper is included.
+
+```bash
+./scripts/build-mac-app.sh --install         # universal app -> /Applications/AustialCast.app
 ./scripts/build-tv-apk.sh                    # signed APK -> dist/AustialCast-TV.apk
-adb connect <tv-ip>:5555                     # enable network debugging in the TV's Developer options
-adb install -r dist/AustialCast-TV.apk
+adb connect <tv-ip>:5555 && adb install -r dist/AustialCast-TV.apk
 ```
 
-Open **AustialCast** from the TV's app list. It shows a PIN and the TV's address.
-
-### 2 · Mac app
-
-```bash
-./scripts/build-mac-app.sh --install         # builds and copies to /Applications/AustialCast.app
-open /Applications/AustialCast.app
-```
-
-Allow **Screen Recording** (System Settings → Privacy & Security) and **Local Network** when macOS asks.
+Maintainers: `./scripts/release.sh 1.0.1 --tap` builds both, publishes a GitHub release and updates the Homebrew cask.
 
 ## 🎬 Usage
 
