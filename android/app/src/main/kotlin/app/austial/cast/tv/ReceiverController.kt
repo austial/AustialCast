@@ -168,11 +168,14 @@ class ReceiverController(private val context: Context, val settings: TvSettings)
         if (video != null) return
         clock = PlayoutClock(settings.smoothness.bufferMs * 1_000_000L)
         decodeCounter.reset()
+        val decoder = VideoDecoder(s, info.width, info.height, ps, clock, decodeCounter,
+            onNeedKeyframe = { server?.requestKeyframe() },
+            onError = { e -> Log.e(TAG, "video error", e); post { notify(ui.state.copy(notice = "Video decoder error: ${e.message}")) } })
+        // Publish the decoder before starting it: codec start-up can take a few hundred ms and the frames
+        // arriving meanwhile (notably the first keyframe) are queued instead of being lost.
+        video = decoder
         try {
-            video = VideoDecoder(s, info.width, info.height, ps, clock, decodeCounter,
-                onNeedKeyframe = { server?.requestKeyframe() },
-                onError = { e -> Log.e(TAG, "video error", e); post { notify(ui.state.copy(notice = "Video decoder error: ${e.message}")) } })
-                .also { it.start() }
+            decoder.start()
         } catch (e: Exception) {
             Log.e(TAG, "cannot start video decoder", e)
             video = null
