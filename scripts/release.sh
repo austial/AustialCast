@@ -70,6 +70,6 @@ if [ $UPDATE_TAP -eq 1 ]; then
   CASK="$TAP_DIR/Casks/austialcast.rb"
   [ -f "$CASK" ] || { echo "cask not found: $CASK (create it once by hand, then this script keeps it updated)"; exit 1; }
   sed -i '' -E "s/^  version \".*\"/  version \"$VERSION\"/; s/^  sha256 \".*\"/  sha256 \"$SHA\"/" "$CASK"
-  ( cd "$TAP_DIR" && git add Casks/austialcast.rb && git commit -q -m "austialcast $VERSION" && git push -q origin HEAD )
+  ( cd "$TAP_DIR" && git add Casks/austialcast.rb README.md && git commit -q -m "austialcast $VERSION" && git push -q origin HEAD )
   echo "Cask updated and pushed: austialcast $VERSION"
 fi
