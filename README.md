@@ -6,6 +6,11 @@
 
 **Cast your MacBook to Android TV & Google TV — screen, window and system audio, encrypted, no cloud.**
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/austial-logo-dark.svg">
+  <img src="docs/assets/brand/austial-logo.svg" alt="Austial" height="26">
+</picture>
+
 [![Android TV](https://img.shields.io/badge/Android%20TV-7.0%2B-3DDC84?logo=androidtv&logoColor=white&style=flat-square)](#-install)
 [![Google TV](https://img.shields.io/badge/Google%20TV-supported-4285F4?logo=google&logoColor=white&style=flat-square)](#-install)
 [![macOS](https://img.shields.io/badge/macOS-14%2B-000000?logo=apple&logoColor=white&style=flat-square)](#-install)
@@ -14,6 +19,7 @@
 [![Tests](https://img.shields.io/badge/tests-188%20passing-brightgreen?style=flat-square)](#-testing)
 [![Encryption](https://img.shields.io/badge/AES--256--GCM-end--to--end-6C8CFF?style=flat-square)](docs/SECURITY.md)
 [![Protocol](https://img.shields.io/badge/protocol-v1%20(open)-informational?style=flat-square)](docs/PROTOCOL.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/austial/AustialCast?style=flat-square)](https://github.com/austial/AustialCast/commits/main)
 
 [Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install) · [Usage](#-usage) · [How it works](#-how-it-works) · [Security](#-security) · [Testing](#-testing) · [Troubleshooting](#-troubleshooting) · [Roadmap](#-roadmap)
@@ -235,8 +241,17 @@ regenerate the vectors (`GENERATE_VECTORS=1 ./gradlew :core:test` in `android/`)
 
 ## 📄 License
 
-No license has been chosen yet; until one is added, all rights are reserved by the authors.
+[MIT](LICENSE) © 2026 Austial.
 
 ---
 
-<div align="center"><sub>Built with Kotlin, Swift, ScreenCaptureKit, VideoToolbox and MediaCodec</sub></div>
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/brand/austial-logo-dark.svg">
+  <img src="docs/assets/brand/austial-logo.svg" alt="Austial" height="22">
+</picture>
+
+<sub>Built with Kotlin, Swift, ScreenCaptureKit, VideoToolbox and MediaCodec</sub>
+
+</div>

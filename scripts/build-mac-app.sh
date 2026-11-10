@@ -18,7 +18,7 @@ cp "$BIN/austialcast" "$APP/Contents/Resources/austialcast"
 
 echo "Rendering icon…"
 ICONSET="$(mktemp -d)/AppIcon.iconset"
-swift "$ROOT/scripts/make-icon.swift" "$ICONSET"
+swift "$ROOT/scripts/make-icon.swift" "$ROOT/docs/assets/logo.svg" "$ICONSET"
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
